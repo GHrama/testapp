@@ -1,0 +1,64 @@
+package simulation_questionaire;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+/**
+ * @author ramapriyasridharan
+ * Main working sequence of the simulation
+ */
+
+public class Main {
+	public static int daily_budget = 50; // maximum amount of money alloted for a day
+	public static int no_days = 2;
+	public static Scanner scanner = new Scanner(System.in);
+	public static void main(String args[]){
+		//call object once anyway to initialize stuff
+		// ask user for personal details
+		
+		UserInformation ui = new UserInformation();
+		ui.getInfoFromUser(scanner);
+		
+		Categories kik = new Categories();
+		Features f = new Features();
+		f.getFeatureRank(scanner);
+		
+		
+		
+		// ask user to rank sensors,buyers and contexts
+		UserProfilingSensors ups = new UserProfilingSensors();
+		ups.getSensorRank(scanner);
+		UserProfilingBuyers upb = new UserProfilingBuyers();
+		upb.getBuyerRank(scanner);
+		UserProfilingContext upc = new UserProfilingContext();
+		upc.getContextRank(scanner);
+		
+		
+		// By default should print all 0's
+		StoreResults sr = new StoreResults();
+		//CommonFunctions.printArrayList(StoreResults.weight_matrix);
+		StoreResults.fillWeightMatrix();
+		StoreResults.fillCostMatrix();
+//		CommonFunctions.printArrayList(StoreResults.weight_matrix);
+		//Questions.frameQuestion(1, 1, 1);
+		//initialize all to 0
+//		CommonFunctions.printArrayList(StoreResults.cost_matrix);
+		Questions.oneRoundQuestions(scanner);
+		Questions.twoRoundQuestions(scanner,1);
+		
+		scanner.close();
+		
+		
+	}
+	
+	
+	
+	/**
+	 * This method loops through the fields of a given object
+	 * and returns in in an arraylist
+	 * @param obj This is the parameter whose class fields we want
+	 * @return ArrayList<String> This returns all the fields of the object
+	 */
+	
+}

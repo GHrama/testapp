@@ -1,0 +1,25 @@
+package simulation_questionaire;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+
+public class ProfilingQuestionFrame {
+	/**
+	 * ask profiling questions
+	 * take the variable from the respective classes
+	 * @param class for which the question is asked
+	 */
+	public static void askQuestion(Class c){
+		System.out.println(" The following are the options ::\n");
+		ArrayList<Field> al = CommonFunctions.loopClassFieldsOriginalSize(c);
+		for(int i = 0 ; i < al.size() ; i++){
+			System.out.println(al.get(i).getName().substring(0, 2)+". "+CommonFunctions.refineString(al.get(i).getName())+"\n");
+		}
+		
+		System.out.println(" The following are the Categories ::\n");
+		ArrayList<Field> al = CommonFunctions.loopClassFieldsOriginalSize(c);
+		for(int i = 0 ; i < al.size() ; i++){
+			System.out.println(al.get(i).getName().substring(0, 2)+". "+CommonFunctions.refineString(al.get(i).getName())+"\n");
+		}
+	}
+}

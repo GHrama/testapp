@@ -1,0 +1,49 @@
+package simulation_questionaire;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Features {
+
+
+	static int sensors;
+	static int data_collectors;
+	static int contexts;
+	static int size;
+	
+	Features(){
+		int count = 0;
+		for(Field field: this.getClass().getDeclaredFields()){
+			count++;
+		}
+		size = count-1;
+	}
+	
+public void getFeatureRank(Scanner scanner){
+		
+		try{
+			
+			System.out.println("You are provided with a set of Features(refered to as Options)");
+			ProfilingQuestionFrame.askQuestion(Features.class);
+			ArrayList<String> parts = new ArrayList<String>();
+			int counter = 0;
+			for(counter = 0; counter < size;counter++){
+				parts.add(scanner.next());
+			}
+			for(int i = 0; i< parts.size(); i++){
+				switch(parts.get(i).substring(0,2)){
+				case "se": sensors = Categories.getRankCategories(parts.get(i).substring(3,6)); break;
+				case "bu": data_collectors = Categories.getRankCategories(parts.get(i).substring(3,6)); break;
+				case "co": contexts = Categories.getRankCategories(parts.get(i).substring(3,6)); break;
+				default : System.out.println("Mistake in given input");
+				}
+			}
+		}
+		finally{
+//			if(scanner!=null)
+//				scanner.close();
+		}
+	}
+	
+}

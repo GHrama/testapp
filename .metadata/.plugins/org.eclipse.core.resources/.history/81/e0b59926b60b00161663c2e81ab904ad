@@ -1,0 +1,60 @@
+package simulation_questionaire;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class UserProfilingSensors {
+
+	int accelerometer;
+	int gyroscope;
+	int battery;
+	int light;
+	int proximity;
+	int location;
+	static int size; // Number of fields
+	
+	UserProfilingSensors(){
+		int count = 0;
+		for(Field field: this.getClass().getDeclaredFields()){
+			count++;
+		}
+		size = count-1;
+	}
+	// ask users to order using first letter of sensor
+	/**
+	 * Take the sensor ranking from suer
+	 * assign it to fields in the class
+	 * 
+	 */
+	
+	
+	public void getSensorRank(Scanner scanner){
+		
+		try{
+			
+			System.out.println("You are provided with a set of Sensors(Refered to as Options)");
+			ArrayList<String> parts = new ArrayList<String>();
+			int counter = 0;
+			for(counter = 0;counter<size;counter++){
+				parts.add(scanner.next());
+			}
+			
+			for(int i = 0;i < parts.size();i++){
+				switch(parts.get(i).substring(0,2)){
+				case "ac": this.accelerometer = Categories.getRankCategories(parts.get(i).substring(3,6)); break;
+				case "gy": this.gyroscope = Categories.getRankCategories(parts.get(i).substring(3,6)); break;
+				case "ba": this.battery = Categories.getRankCategories(parts.get(i).substring(3,6)); break;
+				case "li": this.light = Categories.getRankCategories(parts.get(i).substring(3,6)); break;
+				case "pr": this.proximity = Categories.getRankCategories(parts.get(i).substring(3,6)); break;
+				case "lo": this.location = Categories.getRankCategories(parts.get(i).substring(3,6)); break;
+				default : System.out.println("Mistake in given input");
+				}
+			}
+		}
+	finally{
+//			if(scanner!=null)
+//				scanner.close();
+	}
+	}
+}

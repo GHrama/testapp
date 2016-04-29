@@ -1,0 +1,248 @@
+package simulation_questionaire;
+import java.lang.reflect.Field;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
+public class Questions {
+	public static MessageFormat question = new MessageFormat("The Buyer {1} would like to get your {0} sensor data for the purpose of {2}.\nPlease choose one of the following data sharing levels :");
+	
+	//public static  question;
+
+	
+	/**
+	 * enter index from weight matrix
+	 * ie find the question to ask using weight matrix and ask that question
+	 * assign appropriate features and asks question
+	 * @param i
+	 * @param j
+	 * @param k
+	 * output print question
+	 */
+	
+	public static void frameQuestion(int i,int j,int k){
+		
+		
+		ArrayList<Field> sensors = CommonFunctions.loopClassFieldsOriginalSize(UserProfilingSensors.class);
+		ArrayList<Field> buyers = CommonFunctions.loopClassFieldsOriginalSize(UserProfilingBuyers.class);
+		ArrayList<Field> context = CommonFunctions.loopClassFieldsOriginalSize(UserProfilingContext.class);
+		Object[] args = {sensors.get(i).getName(), buyers.get(j).getName(), context.get(k).getName()};
+		//Object[] args = {"meow","meow","meow"};
+		String q = question.format(args);
+		
+		
+		
+		
+		
+		System.out.println(q);
+	}
+	
+	/**
+	 * first profiling round
+	 * @param scanner
+	 */
+	public static void oneRoundQuestions(Scanner scanner){
+		
+		// constructor to set the size
+		
+		for(int i = 0; i< UserProfilingSensors.size ; i++){
+			for(int j = 0; j< UserProfilingBuyers.size ; j++){
+				for(int k = 0; k< UserProfilingContext.size ; k++){
+					System.out.println();
+					Questions.frameQuestion(i, j, k);
+					Options.displayOptions();
+					System.out.println("Type your answer and press enter::");
+					int ans = Integer.parseInt(scanner.next()); // Contains user choice
+					double pri = Options.getPrivacyOptions(ans);
+					StoreResults.answers[i][j][k][0] = ans;
+					StoreResults.total_credit += StoreResults.cost_matrix[i][j][k] * pri;
+					StoreResults.total_privacy_percentage = ( StoreResults.total_privacy_percentage*StoreResults.num + (1-pri)*100)/(StoreResults.num);
+					System.out.println("Privacy = "+StoreResults.total_privacy_percentage+" total credit = "+StoreResults.total_credit);
+					StoreResults.num += 1;
+					
+				}
+			}
+		}
+	}
+	
+	/**
+	 * see if user wants to improve privacy or credit
+	 * and display appropriate question
+	 * second round after profiling
+	 * @param scanner
+	 */
+	public static void twoRoundQuestions(Scanner scanner, int current_round){
+		System.out.println(" CURRENT ROUND = "+current_round+1);
+		boolean flag = true;
+		// keep looping till there are more questions to answer
+		while(flag){
+			System.out.println("Would you like to improve your 1. Privacy or your 2. Credit");
+			
+			int ans = Integer.parseInt(scanner.next());
+			if(ans == 1){ // choose privacy improvement
+				// look for questions where max privacy was not input
+				// look into the last round
+				flag = lookLowPrivacy(current_round - 1, scanner);
+				
+			}
+			else if(ans == 2){ // choose credit improvement
+				// look for a question where max privacy was not obtained
+				// look into the last round
+				flag = lookHighPrivacy(current_round - 1, scanner);
+			}
+			
+		}
+	}
+	
+	
+	/**
+	 * look for the questions with low privacy
+	 * ie.. with low option number
+	 * @param last_round
+	 * @return
+	 * ASKED TO IMPROVE PRIVACY
+	 */
+	public static boolean lookLowPrivacy(int last_round, Scanner scanner){
+		boolean flag = false; // more unanswered questions?
+		double min_privacy = 5;
+		int min_i = -1;
+		int min_j = -1;
+		int min_k = -1;
+		// look for lower privacy
+		
+		for(int i = 0; i< UserProfilingSensors.size ; i++){
+			for(int j = 0; j< UserProfilingBuyers.size ; j++){
+				for(int k = 0; k< UserProfilingContext.size ; k++){
+					//check if this answer is unanswered in current_round
+					if(StoreResults.answers[i][j][k][last_round+1] == -1){
+						flag = true;//at least one unanswered question
+						// 5 is the highest privacy
+						if(StoreResults.answers[i][j][k][last_round] <= min_privacy){
+							min_i = i;
+							min_j = j;
+							min_k = k;
+							min_privacy = StoreResults.answers[i][j][k][last_round];
+						}	
+					}
+					else
+					{
+						// has been answered
+						continue;
+					}
+				}
+			}
+		}
+		// now suggest options that improve the privacy
+		// ie. higher options
+		
+		//check border condition ie. cannot improve the privacy further
+		// then suggest the same option
+		
+		if( min_i != -1 && flag == true){
+			Questions.frameQuestion(min_i, min_j, min_k);
+			if(min_privacy == 5){
+				// already given maximum privacy for this question
+				// cannot improve privacy further
+				System.out.println("min_privacy ="+min_privacy);
+				System.out.println("hello1");
+				Options.displayAugmentedOptionsAbove(min_privacy, 1, true,min_i,min_j,min_k,last_round);
+			}
+			else
+			{
+				System.out.println("min_privacy ="+min_privacy);
+				System.out.println("hello2");
+				// can improve privacy further
+				Options.displayAugmentedOptionsAbove(min_privacy + 1, 1, false,min_i,min_j,min_k,last_round);
+			}
+			System.out.println("Type your answer and press enter::");
+			int ans = Integer.parseInt(scanner.next()); // Contains user choice
+			double pri = Options.getPrivacyOptions(ans);
+			StoreResults.answers[min_i][min_j][min_k][last_round+1] = ans;
+			StoreResults.total_credit += StoreResults.cost_matrix[min_i][min_j][min_k] * pri;
+			StoreResults.total_privacy_percentage = ((double) ( (double)StoreResults.total_privacy_percentage*StoreResults.num + pri*100)/(StoreResults.num+1));
+			StoreResults.num += 1;
+			System.out.println("Privacy = "+StoreResults.total_privacy_percentage+" total credit = "+StoreResults.total_credit);
+			
+		}
+		
+		
+		return flag;
+	}
+	
+	
+	/**
+	 * Look for questions with high privacy
+	 * ie.. questions with option number highest
+	 * @param last_round
+	 * @return
+	 * ASK TO IMPROVE THE CREDIT
+	 */
+	public static boolean lookHighPrivacy(int last_round, Scanner scanner){
+		boolean flag = false; // more unanswered questions?
+		double max_privacy = 1;
+		int min_i = -1;
+		int min_j = -1;
+		int min_k = -1;
+		// look for lower privacy
+		
+		for(int i = 0; i< UserProfilingSensors.size ; i++){
+			for(int j = 0; j< UserProfilingBuyers.size ; j++){
+				for(int k = 0; k< UserProfilingContext.size ; k++){
+					//check if this answer is unanswered in current_round
+					if(StoreResults.answers[i][j][k][last_round+1] == -1){
+						flag = true;//at least one unanswered question in survey
+						// 1 is the lowest privacy level
+						if(StoreResults.answers[i][j][k][last_round] >= max_privacy){
+							min_i = i;
+							min_j = j;
+							min_k = k;
+							max_privacy = StoreResults.answers[i][j][k][last_round];
+						}	
+					}
+					else
+					{
+						// has been answered
+						continue;
+					}
+				}
+			}
+		}
+		// now suggest options that improve the privacy
+		// ie. higher options
+		
+		//check border condition ie. cannot improve the privacy further
+		// then suggest the same option
+		
+		if( min_i != -1 && flag == true){
+			Questions.frameQuestion(min_i, min_j, min_k);
+			if(max_privacy == 1){
+				System.out.println("max_privacy ="+max_privacy);
+				System.out.println("hello3");
+				// already given all your data
+				Options.displayAugmentedOptionsAbove(max_privacy, 2, true,min_i,min_j,min_k,last_round);
+			}
+			else
+			{
+				System.out.println("max_privacy ="+max_privacy);
+				System.out.println("hello4");
+				Options.displayAugmentedOptionsAbove(max_privacy - 1, 2, false,min_i,min_j,min_k,last_round);
+			}
+			System.out.println("Type your answer and press enter::");
+			int ans = Integer.parseInt(scanner.next()); // Contains user choice
+			double pri = Options.getPrivacyOptions(ans);
+			StoreResults.answers[min_i][min_j][min_k][last_round+1] = ans;
+			StoreResults.total_credit += StoreResults.cost_matrix[min_i][min_j][min_k] * pri;
+			StoreResults.total_privacy_percentage = ((double) ( (double)StoreResults.total_privacy_percentage*StoreResults.num + pri*100)/(StoreResults.num+1));
+			StoreResults.num += 1;
+			System.out.println("Privacy = "+StoreResults.total_privacy_percentage+" total credit = "+StoreResults.total_credit);
+			
+		}
+		
+		
+		return flag;
+	}
+	
+	
+}

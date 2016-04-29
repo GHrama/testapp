@@ -1,0 +1,168 @@
+package simulation_questionaire;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+
+/**
+ * Weight matrix store
+ * calculation of weight matrix
+ * @author ramapriyasridharan
+ *
+ */
+public class StoreResults {
+	
+	public static double total_credit = 0;
+	public static double total_privacy_percentage = 0;
+	public static double num = 0; // number of questions answered to calculate privacy
+	public static double [] this_round_privacy = new double [simulation_questionaire.no_days];
+	public static double [] this_round_num = new double[simulation_questionaire.no_days];
+	
+	// hold weight for each question
+	public static double[][][] weight_matrix = new double[UserProfilingSensors.size][UserProfilingBuyers.size][UserProfilingContext.size];
+	public static double[][][] cost_matrix = new double[UserProfilingSensors.size][UserProfilingBuyers.size][UserProfilingContext.size];
+	public static double[][][][] answers = new double[UserProfilingSensors.size][UserProfilingBuyers.size][UserProfilingContext.size][simulation_questionaire.no_days];
+	
+	// initialize to 0
+	StoreResults(){
+		for(int i=0;i<UserProfilingSensors.size;i++){	
+			for(int j=0;j<UserProfilingBuyers.size;j++){
+				for(int k=0;k<UserProfilingContext.size;k++){
+					weight_matrix[i][j][k] = -1;
+					cost_matrix[i][j][k] = -1;
+					for(int h = 0;h < simulation_questionaire.no_days;h++){
+						answers[i][j][k][h] = -1;
+						this_round_privacy[h] = 0;
+						this_round_num[h] = 0;
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * given the current round
+	 * display information for the user
+	 * @param cr
+	 */
+	public static void displayStatus(int cr){
+		System.out.println("Total Privacy Percentage = "+StoreResults.total_privacy_percentage+"  Current Round Privacy Percentage ="+StoreResults.this_round_privacy[cr]+"  Total Credit Obtained = "+StoreResults.total_credit);
+	}
+	
+	/**
+	 * fill in maximum budget for each question
+	 */
+	public static void fillCostMatrix(){
+		// calculate the sum of all the elements of the weight_matrix
+		double weight_matrix_sum = 0.0;
+		for(int i=0;i<UserProfilingSensors.size;i++){
+			for(int j=0;j<UserProfilingBuyers.size;j++){
+				for(int k=0;k<UserProfilingContext.size;k++){
+					weight_matrix_sum += weight_matrix[i][j][k];
+				}
+			}
+		}
+		
+//		System.out.println("total_weight_matrix"+weight_matrix_sum);
+		
+		for(int i=0;i<UserProfilingSensors.size;i++){
+			for(int j=0;j<UserProfilingBuyers.size;j++){
+				for(int k=0;k<UserProfilingContext.size;k++){
+					cost_matrix[i][j][k] = ((double)weight_matrix[i][j][k]/weight_matrix_sum) * simulation_questionaire.daily_budget; 
+				}
+			}
+		}
+		
+		
+		
+	}
+	
+	/**
+	 * Calculate the weight_matrix using the profiling questions
+	 */
+	public static void fillWeightMatrix(){
+		// calculate parameters of each feature
+		Features f = new Features();
+		UserProfilingSensors ups = new UserProfilingSensors();
+		UserProfilingBuyers upb = new UserProfilingBuyers();
+		UserProfilingContext upc = new UserProfilingContext();
+		
+		
+	
+//		System.out.println("length of sensors "+UserProfilingSensors.size);
+//		System.out.println("length of buyers "+UserProfilingBuyers.size);
+//		System.out.println("length of contexts "+UserProfilingContext.size);
+		double[] features_parameter = new double[3];
+		ArrayList<Field> features = CommonFunctions.loopClassFieldsOriginalSize(Features.class);
+		// Access each of the fields
+		// get the rank, assign the respective weights
+		for(int i=0;i < features.size();i++){
+			try {
+//				System.out.println("Feature values"+features.get(i).getInt(f));
+//				System.out.println("Feature weights"+Categories.getWeightFromRank((int) features.get(i).get(f)));
+				features_parameter[i] = Categories.getWeightFromRank((int) features.get(i).get(f));
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		// size if not a part of the fields
+		ArrayList<Field> sensors = CommonFunctions.loopClassFieldsOriginalSize(UserProfilingSensors.class);
+		ArrayList<Field> buyers = CommonFunctions.loopClassFieldsOriginalSize(UserProfilingBuyers.class);
+		ArrayList<Field> context = CommonFunctions.loopClassFieldsOriginalSize(UserProfilingContext.class);
+		
+		
+		// calculate the weight of each category
+		for(int i = 0;i<UserProfilingSensors.size;i++){
+			
+			double ss = 0;
+			try {
+				 ss = features_parameter[0] * Categories.getWeightFromRank(sensors.get(i).getInt(ups));
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+			for(int j = 0;j<UserProfilingBuyers.size;j++){
+				double bb = 0;
+				try {
+					 bb = features_parameter[1] *Categories.getWeightFromRank(buyers.get(j).getInt(upb));
+				} catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				
+				for(int k = 0;k<UserProfilingContext.size;k++){
+					double cc = 0;
+					try {
+						 cc = features_parameter[2] *Categories.getWeightFromRank(context.get(k).getInt(upc));
+					} catch (IllegalArgumentException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IllegalAccessException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					// calculation starts
+					weight_matrix[i][j][k] = ss + bb + cc;
+					
+					
+					
+				}//end context loop
+			}//end buyer loop
+		}// end sensor loop
+	}
+	
+	
+}

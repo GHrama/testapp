@@ -1,0 +1,11 @@
+package simulation_questionaire;
+
+public class ProfilingQuestionFrame {
+	/**
+	 * ask profiling questions
+	 * take the variable from the respective classes
+	 */
+	public static void askQuestion(Class c){
+		
+	}
+}

@@ -1,0 +1,70 @@
+package simulation_questionaire;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class UserProfilingContext {
+
+
+
+	//	npi. non privacy intrusive
+//	spi. slightly pirvacy intrusive
+//	vpi. pirvacy intrusive
+	static int educational;
+	static int entertainment;
+	static int health;
+	static int localization;
+	static int shopping;
+	static int social_media;
+	static int size;
+	
+	UserProfilingContext(){
+		int count = 0;
+		for(Field field: this.getClass().getDeclaredFields()){
+			count++;
+		}
+		size = count-1;
+	}
+	
+	
+	
+	
+	/**
+	 * Contexts are placed in rank categories
+	 * for each context find the category using getRankCategories()
+	 * field are assigned to ranks
+	 */
+	public void getContextRank(Scanner scanner){
+		
+		try{
+			
+			System.out.println("You are provided with a set of Contexts(Refered to as Options)");
+			ProfilingQuestionFrame.askQuestion(UserProfilingContext.class);
+			ArrayList<String> parts = new ArrayList<String>();
+			int counter = 0;
+			for(counter = 0; counter < size; counter++){
+				parts.add(scanner.next());
+			}
+			for(int i = 0; i < parts.size(); i++){
+				// first two letters is the context
+				// last 3 letters is the intrusiveness assigned
+				switch(parts.get(i).substring(0,2)){
+				case "ed": educational = Categories.getRankCategories(parts.get(i).substring(3,6)); break;		
+				case "en": entertainment = Categories.getRankCategories(parts.get(i).substring(3,6)); break;	
+				case "he": health = Categories.getRankCategories(parts.get(i).substring(3,6)); break;	
+				case "lo": localization = Categories.getRankCategories(parts.get(i).substring(3,6)); break;	
+				case "sh": shopping = Categories.getRankCategories(parts.get(i).substring(3,6)); break;	
+				case "so": social_media = Categories.getRankCategories(parts.get(i).substring(3,6)); break;	
+				default : System.out.println("Mistake in given input");
+				}
+			}
+		}
+		finally{
+//			if(scanner!=null)
+//				scanner.close();
+		}
+	}
+}
+
+

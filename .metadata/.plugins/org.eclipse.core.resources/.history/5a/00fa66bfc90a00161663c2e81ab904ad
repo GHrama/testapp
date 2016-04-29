@@ -1,0 +1,41 @@
+package simulation_questionaire;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+
+public class Options {
+	// set fixed privacy options before hand
+	public static double give_full_data = 0;   //option 1
+	public static double give_some_data = 0.5;  //option 2
+	public static double give_no_data = 1;     // option 3
+	
+	/**
+	 * get the amount of privacy for each option
+	 * @return
+	 */
+	public static double getPrivacyOptions(int pri){
+		
+		switch(pri){
+		case 1: return give_full_data;
+		case 2: return give_some_data;
+		case 3:	return give_no_data;
+		
+		}
+		return -1;
+	}
+	
+	/**
+	 * Get names of the options.
+	 * returns names of the assigned fields
+	 */
+	public static void displayOptions(){
+		ArrayList<Field> o = CommonFunctions.loopClassFieldsOriginalSize(Options.class);
+		for(int i = 0; i < o.size();i++){
+			System.out.println(" "+(i+1)+". "+o.get(i).getName());
+		}
+		
+		
+	}
+	
+	
+}

@@ -1,0 +1,16 @@
+package simulation_questionaire;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+
+public class ProfilingQuestionFrame {
+	/**
+	 * ask profiling questions
+	 * take the variable from the respective classes
+	 * @param class for which the question is asked
+	 */
+	public static void askQuestion(Class c){
+		System.out.println(" The following are the options to be placed in the categories ::\n");
+		ArrayList<Field> al = CommonFunctions.loopClassFieldsOriginalSize(c);
+	}
+}
